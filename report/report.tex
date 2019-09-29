@@ -76,13 +76,33 @@ Relative Reconstruction Error (RRE) is similar to loss, but the result is normal
 
 \[RRE = \frac{\|V - WH\|_F}{\|V\|_F}\]
 
-where $V$ is the clean dataset, $W$ and $H$ are the dictionary and encoding respectively, and $\hat{V}$ is the noisy dataset from which $W$ and $H$ are learned.
+where $V$ is the clean dataset, $W$ and $H$ are the dictionary and encoding respectively, and $\hat{V}$ is the noisy dataset from which $W$ and $H$ are learned.\\
 
 \subsection{Normalized Mutual Information}
 
 
 
 \section{Experiment}
+
+\subsection{Hypersurface Smoothing}
+
+The hypersurface smoothing algorithm was designed primarily to be robust against outliers. The occlusion noise in this experiment can be considered a form of outlier, and the adjusted cost function downweights the relative importance of these pixels.
+
+The hyperparameters were set as follows: Step size was 0.005 for both W and H matrices, rank was 10, and maximum iterations was 5000. The algorithm shows rapid initial gains in decreasing loss, as shown by figure \ref{figure:hypersurface_logloss}. However, the algorithm quickly finds a ``floor'' beyond which it cannot improve further. 
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{hypersurface_logloss}
+  \caption{Algorithm performance as a function of training iterations. Loss declines steeply at first but levels off quickly. Log loss shows that performance improves for the initial $\frac{1}{3}$rd of the training process}
+  \label{figure:hypersurface_logloss}
+\end{figure}
+
+The algorithm was able to produce a sensible representation of faces from training over the cropped Yale images, as shown in \ref{figure:hypersurface_learned_faces}. Furthermore, there are noticeable differences between faces. However, there is still substantial differences between the output and the original data.
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{hypersurface_learned_faces}
+  \caption{The reconstruction of the data based on the hypersurface algorithm}
+  \label{figure:hypersurface_learned_faces}
+\end{figure}
 
 \section{Conclusion}
 
