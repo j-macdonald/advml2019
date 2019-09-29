@@ -45,14 +45,16 @@ This paper will examine NMF in the following sections. The first section will co
 \section{Related work}
 An early mention of NMF techniques can be found in \cite{paatero1994} which describes a ``Positive Matrix Factorization'' paradigm as an alternative to both PCA and Factor Analysis. The paper touts the importance of non-negativity constraints in ``environmental applications'', and suggesets unintuitive results is a cause that competing methods ``have only found limited applications'' in that domain. The paper sets up the fundamentals of the algorithm, describing two matrices of equal rank that are solved by Alternating Regression (AR), whereby one of the matrices is kept constant and the other is solved, then vice versa, repeating until a solution is reached or the number of iterations is exhausted.\\
 
-Another influential paper, \cite{lee99} explored the potential of NMF in two key areas, text data and image data (in fact, the authors specifically examine NMF performance in facial image data, which will be explored later in this piece). The paper outlines how the algorithm distills the data down to a set of basis faces or \textit{eigenfaces}, using linear combinations of these bases to recreate the original input data. This is given mathematically as \(V \approx (WH)\), where V is the original set of images, W is a set of basis images and H encodes the original information as a sparse addition of the basis images. Like the previously discussed paper, \cite{lee99} use an alternating iterative update algorithm to fix H while updating W, and vice versa.
+Another influential paper, \cite{lee99} explored the potential of NMF in two key areas, text data and image data (in fact, the authors specifically examine NMF performance in facial image data, which will be explored later in this piece). The paper outlines how the algorithm distills the data down to a set of basis faces or \textit{eigenfaces}, using linear combinations of these bases to recreate the original input data. This is given mathematically as \(V \approx (WH)\), where V is the original set of images, W is a set of basis images and H encodes the original information as a sparse addition of the basis images. Like the previously discussed paper, \cite{lee99} use an alternating iterative update algorithm to fix H while updating W, and vice versa.\\
 
-The fundamental idea has been exploited in a number of variations. In \cite{Hamza2006}, the authors employ an adjusted cost function that behaves linear when large, but quadratic when small. Theoretically this should make it more robust to outliers by de-emphasizing the penalty of larger error terms. Another regularization technique is to introduce a penalty term proportional to the L1 Norm of the data. This approach has the added benefit of encouraging sparsity into the solution.
+This prior work is summarised in the \cite{NIPS2000_1861}, which articulates the two alternative formulations of the problem NMF solves: Firstly, minimizing the squared loss of $\|V - WH\|^2$, and secondly, minimizing the divergence $D(V\|WH)$. Both problems are defined  by iterating on W and H while constrained to keeping both matrices $>=0$. \\
+
+The fundamental idea has been exploited in a number of variations. In \cite{Hamza2006}, the authors employ an adjusted cost function that behaves linear when large, but quadratic when small. Theoretically this should make it more robust to outliers by de-emphasizing the penalty of larger error terms. Another regularization technique is to introduce a penalty term proportional to the L1 Norm of the data. This approach has the added benefit of encouraging sparsity into the solution.\\
 
 
 \section{Methods}
 
-This experiment will analyse the performance of three non-negative matrix factorization (NMF) algorithms on facial image data. Firstly, hypersurface cost-function NMF as described in \cite{Hamza2006}. Secondly, L1-norm regularized NMF which includes a penalty term to reduce overfitting and encourage sparsity. Lastly, these variations will be compared against a vanilla application of NMF.
+This experiment will analyse the performance of three non-negative matrix factorization (NMF) algorithms on facial image data. Firstly, hypersurface cost-function NMF as described in \cite{Hamza2006}. Secondly, L1-norm regularized NMF which includes a penalty term to reduce overfitting and encourage sparsity. Lastly, these variations will be compared against a vanilla application of NMF using multiplicative updates as described in \cite{NIPS2000_1861}.\\
 
 Two image datasets are used. The first consists of photos from the Yale Face Database which have been cropped to keep the position of key facial features consistent between photos. The second is the ORL dataset, consisting of multiple photos per individual, taken from different angles. The first dataset poses a much simpler problem, as the algorithm does not need to adjust for the shifting relative position of facial features as angles change.\\
 
@@ -80,6 +82,11 @@ where $V$ is the clean dataset, $W$ and $H$ are the dictionary and encoding resp
 
 \subsection{Normalized Mutual Information}
 
+Normalized mutual information is a classification metric that can assess the ability of an algorithm at detecting the true class of some underlying data. It is given by the following equation:
+
+\[ NMI(Y,Y_p_r_e_d) =  \frac{2 * I(Y,Y_p_r_e_d)}{H(Y) + H(Y_p_r_e_d)}\]
+
+Normalized mutual information will be used to determine whether the reconstructed faces can capture the label information of the original data
 
 
 \section{Experiment}
@@ -88,7 +95,7 @@ where $V$ is the clean dataset, $W$ and $H$ are the dictionary and encoding resp
 
 The hypersurface smoothing algorithm was designed primarily to be robust against outliers. The occlusion noise in this experiment can be considered a form of outlier, and the adjusted cost function downweights the relative importance of these pixels.
 
-The hyperparameters were set as follows: Step size was 0.005 for both W and H matrices, rank was 10, and maximum iterations was 5000. The algorithm shows rapid initial gains in decreasing loss, as shown by figure \ref{figure:hypersurface_logloss}. However, the algorithm quickly finds a ``floor'' beyond which it cannot improve further. 
+The hyperparameters were set as follows: Step size was 0.005 for both W and H matrices, rank was 10, and maximum iterations was 5000. An initial run was conducted without any occlusion, and then occlusion (n\_boxes = 3) was introduced to test for robustness. The algorithm shows rapid initial gains in decreasing loss, as shown by figure \ref{figure:hypersurface_logloss}. However, the algorithm quickly finds a ``floor'' beyond which it cannot improve further. 
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{hypersurface_logloss}
@@ -96,11 +103,11 @@ The hyperparameters were set as follows: Step size was 0.005 for both W and H ma
   \label{figure:hypersurface_logloss}
 \end{figure}
 
-The algorithm was able to produce a sensible representation of faces from training over the cropped Yale images, as shown in \ref{figure:hypersurface_learned_faces}. Furthermore, there are noticeable differences between faces. However, there is still substantial differences between the output and the original data.
+The algorithm was able to produce a sensible representation of faces from training over the cropped Yale images, as shown in \ref{figure:hypersurface_learned_faces}. Furthermore, there are noticeable differences between faces. However, there is still substantial differences between the output and the original data, and in the presence of pixel occlusion the algorithm was wholly unable to reproduce a sensibile representation.
 
 \begin{figure}[h]
-  \includegraphics[width=\textwidth]{hypersurface_learned_faces}
-  \caption{The reconstruction of the data based on the hypersurface algorithm}
+  \includegraphics[width=\textwidth]{hypersurface_learned_occlued_faces}
+  \caption{The reconstruction of the data based on the hypersurface algorithm, and the training data to which the algorithm was exposed}
   \label{figure:hypersurface_learned_faces}
 \end{figure}
 
