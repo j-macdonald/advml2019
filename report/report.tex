@@ -49,22 +49,29 @@ Another influential paper, \cite{lee99} explored the potential of NMF in two key
 
 This prior work is summarised in the \cite{NIPS2000_1861}, which articulates the two alternative formulations of the problem NMF solves: Firstly, minimizing the squared loss of $\|V - WH\|^2$, and secondly, minimizing the divergence $D(V\|WH)$. Both problems are defined  by iterating on W and H while constrained to keeping both matrices $>=0$. \\
 
-The fundamental idea has been exploited in a number of variations. In \cite{Hamza2006}, the authors employ an adjusted cost function that behaves linear when large, but quadratic when small. Theoretically this should make it more robust to outliers by de-emphasizing the penalty of larger error terms. Another regularization technique is to introduce a penalty term proportional to the L1 Norm of the data. This approach has the added benefit of encouraging sparsity into the solution.\\
+The fundamental idea has been exploited in a number of variations. In \cite{Hamza2006}, the authors employ an adjusted cost function that behaves linear when large, but quadratic when small. Theoretically this should make it more robust to outliers by de-emphasizing the penalty of larger error terms. Another regularization technique is to introduce a penalty term proportional to the L1 Norm of the data, explored by \cite{Ke_2005} among others. This approach has the added benefit of encouraging sparsity into the solution.\\
 
 
 \section{Methods}
 
-This experiment will analyse the performance of three non-negative matrix factorization (NMF) algorithms on facial image data. Firstly, hypersurface cost-function NMF as described in \cite{Hamza2006}. Secondly, L1-norm regularized NMF which includes a penalty term to reduce overfitting and encourage sparsity. Lastly, these variations will be compared against a vanilla application of NMF using multiplicative updates as described in \cite{NIPS2000_1861}.\\
+This experiment will analyse the performance of three non-negative matrix factorization (NMF) algorithms on facial image data. Firstly, hypersurface cost-function NMF as described in \cite{Hamza2006}. Secondly, L1-norm regularized NMF which includes a penalty term to reduce overfitting and encourage sparsity. Lastly, these variations will be compared against a vanilla application of NMF using multiplicative updates as described in \cite{NIPS2000_1861}. These solutions will be compared against the algorithm implemented by the sklearn package.\\
 
 Two image datasets are used. The first consists of photos from the Yale Face Database which have been cropped to keep the position of key facial features consistent between photos. The second is the ORL dataset, consisting of multiple photos per individual, taken from different angles. The first dataset poses a much simpler problem, as the algorithm does not need to adjust for the shifting relative position of facial features as angles change.\\
 
-In order to test the algorithms further, block occlusion was introduced into the features. Rectangles of pixels were set to the max pixel value, hiding the information in those pixels from the algorithm. This is shown in figure \ref{fig:examplefaces}.\\
+In order to test the algorithms further, block occlusion was introduced into the features. Rectangles of pixels were set to the max pixel value, hiding the information in those pixels from the algorithm. This is shown in figures \ref{fig:exampleofaces} and \ref{fig:exampleyfaces}.\\
 
 \begin{figure}[h]
-  \includegraphics[width=\textwidth]{examplefaces}
-  \caption{Example cropped faces from the Yale dataset. The top image shows the original, the bottom shows randomly generated occlusion}
-  \label{fig:examplefaces}
+  \includegraphics[width=\textwidth]{sklearn_orl_occluded_learn}
+  \caption{Example images from the ORL dataset. The top image shows the original, the second row shows randomly generated occlusion, the third row shows the solution achieved by the sklearn benchmark}
+  \label{fig:exampleofaces}
 \end{figure}
+
+\begin{figure}[h]
+  \includegraphics[width=\textwidth]{sklearn_yaleb_occluded_learn}
+  \caption{Example cropped faces from the Yale dataset. The top image shows the original, the second row shows randomly generated occlusion, the third row shows the solution achieved by the sklearn benchmark}
+  \label{fig:exampleyfaces}
+\end{figure}
+
 
 In order to measure the the performance of these different algorithms, the following metrics will be considered:\\
 
@@ -99,11 +106,11 @@ The hyperparameters were set as follows: Step size was 0.005 for both W and H ma
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{hypersurface_logloss}
-  \caption{Algorithm performance as a function of training iterations. Loss declines steeply at first but levels off quickly. Log loss shows that performance improves for the initial $\frac{1}{3}$rd of the training process}
+  \caption{Algorithm performance as a function of training iterations. Loss declines steeply at first but levels off quickly. Log loss shows that performance improves for the initial $\frac{1}{3}$rd of the otraining process}
   \label{figure:hypersurface_logloss}
 \end{figure}
 
-The algorithm was able to produce a sensible representation of faces from training over the cropped Yale images, as shown in \ref{figure:hypersurface_learned_faces}. Furthermore, there are noticeable differences between faces. However, there is still substantial differences between the output and the original data, and in the presence of pixel occlusion the algorithm was wholly unable to reproduce a sensibile representation.
+The algorithm was unable to produce a sensible representation of faces from training over the cropped Yale images, as shown in \ref{figure:hypersurface_learned_faces}. However, it is possible to see some faint outlines of the facial features the algorithm is supposed to identify, such as eyes, nose and lips.  Furthermore, there are noticeable differences between faces. However, there is still substantial differences between the output and the original data, and the algorithm has also learned the occlusion in some cases.
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{hypersurface_learned_occlued_faces}
